@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27428.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinCred", "WinCred\WinCred.csproj", "{4E4823B4-D2B0-4C55-9B9E-925340A618DD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinCredTests", "WinCredTests\WinCredTests.csproj", "{33780CB6-2B25-4161-B387-6B89C8053979}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{4E4823B4-D2B0-4C55-9B9E-925340A618DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E4823B4-D2B0-4C55-9B9E-925340A618DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E4823B4-D2B0-4C55-9B9E-925340A618DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33780CB6-2B25-4161-B387-6B89C8053979}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33780CB6-2B25-4161-B387-6B89C8053979}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33780CB6-2B25-4161-B387-6B89C8053979}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33780CB6-2B25-4161-B387-6B89C8053979}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
