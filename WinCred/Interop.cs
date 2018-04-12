@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Advapi32.WinCred
 {
-    static class Interop
+    internal static class Interop
     {
         [DllImport("kernel32.dll")]
         public static extern uint FormatMessage(uint dwFlags, IntPtr lpSource, uint dwMessageId, uint dwLanguageId, StringBuilder lpBuffer, int nSize, IntPtr Arguments);
@@ -26,5 +26,7 @@ namespace Advapi32.WinCred
         public static extern bool CredWrite(ref UnmanagedCredential credential, CredFlags flags);
         [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern bool CredDelete(string targetName, CredType type, CredFlags flags);
+        [DllImport("advapi32.dll", SetLastError = true)]
+        public static extern bool CredFree(IntPtr buffer);
     }
 }

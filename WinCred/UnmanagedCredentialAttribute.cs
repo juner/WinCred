@@ -6,7 +6,6 @@ namespace Advapi32.WinCred
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 4)]
     public struct UnmanagedCredentialAttribute
     {
-        [MarshalAs(UnmanagedType.LPTStr)]
         public string Keyword;
         public uint Flags;
         uint ValueSize;

@@ -92,7 +92,26 @@ namespace Advapi32.WinCred
         /// ポインタからの変換
         /// </summary>
         /// <param name="ptr"></param>
-        public static UnmanagedCredential FromPtr(IntPtr ptr) => (UnmanagedCredential)Marshal.PtrToStructure(ptr, typeof(UnmanagedCredential));
+        public static UnmanagedCredential From(IntPtr ptr) => (UnmanagedCredential)Marshal.PtrToStructure(ptr, typeof(UnmanagedCredential));
+        /// <summary>
+        /// 資格情報の登録
+        /// </summary>
+        /// <param name="unmanagedCred"></param>
+        /// <param name="flags"></param>
+        public void Write(CredFlags flags)
+        {
+            if (!Interop.CredWrite(ref this, flags))
+            {
+                throw new ApplicationException(Interop.GetErrorMessage());
+            }
+        }
+        public void Delete()
+        {
+            if (!Interop.CredDelete(TargetName, Type, Flags))
+            {
+                throw new ApplicationException(Interop.GetErrorMessage());
+            }
+        }
         /// <summary>
         /// マネージドな Credential からの生成
         /// </summary>
@@ -116,7 +135,7 @@ namespace Advapi32.WinCred
                 .Select(ca => UnmanagedCredentialAttribute.From(ca))
                 .ToArray();
         }
-        public Credential ToCredential()
+        public Credential ToManaged()
         {
             return new Credential
             {
@@ -127,9 +146,9 @@ namespace Advapi32.WinCred
                 LastWritten = LastWritten.ToDateTime(),
                 CredentialBlob = CredentialBlob,
                 Persist = Persist,
-                Attributes = (Attributes ?? Enumerable.Empty<UnmanagedCredentialAttribute>())
-                    .Select(uca => uca.ToManaged())
-                    .ToArray(),
+                //Attributes = (Attributes ?? Enumerable.Empty<UnmanagedCredentialAttribute>())
+                //    .Select(uca => uca.ToManaged())
+                //    .ToArray(),
                 TargetAlias = TargetAlias,
                 UserName = UserName,
             };

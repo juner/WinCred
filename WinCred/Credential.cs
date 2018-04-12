@@ -52,14 +52,11 @@ namespace Advapi32.WinCred
             //CredEnumerate呼び出し
             if (!Interop.CredEnumerate(Filter, CredFlags, out count, out pCredentials))
             {
-                Console.WriteLine(Interop.GetErrorMessage());
-                throw new ApplicationException("資格情報の列挙に失敗しました。");
+                throw new ApplicationException(Interop.GetErrorMessage());
             }
-
-            foreach (var Credential in Enumerable.Range(0, count)
-                             .Select(n => Marshal.ReadIntPtr(pCredentials, n * Marshal.SizeOf(typeof(IntPtr))))
-                             .Select(ptr => UnmanagedCredential.FromPtr(ptr).ToCredential()))
-                yield return Credential;
+            using (var handle = new CriticalCredentialArrayHandle(count, pCredentials))
+                foreach (var credential in handle.GetCredentials())
+                    yield return credential;
         }
         /// <summary>
         /// 資格情報の読み込み
@@ -69,15 +66,10 @@ namespace Advapi32.WinCred
         /// <returns></returns>
         public static Credential Read(string targetName, CredType type)
         {
-            var credential = IntPtr.Zero;
-
-            if (!Interop.CredRead(targetName, type, 0, out credential))
-            {
-                Console.WriteLine(Interop.GetErrorMessage());
-                throw new ApplicationException("資格情報の取得に失敗しました。");
-            }
-
-            return UnmanagedCredential.FromPtr(credential).ToCredential();
+            if (Interop.CredRead(targetName, type, 0, out var credentialPtr))
+                using (var credential = new CriticalCredentialHandle(credentialPtr))
+                    return credential.GetCredential();
+            throw new ApplicationException(Interop.GetErrorMessage());
         }
         public void Write() => Write(this, Flags);
 
@@ -88,38 +80,20 @@ namespace Advapi32.WinCred
         /// <param name="flags"></param>
         public static void Write(Credential managedCred, CredFlags flags)
         {
-            Write(new UnmanagedCredential(managedCred), flags);
+            new UnmanagedCredential(managedCred).Write(flags);
         }
 
-        /// <summary>
-        /// 資格情報の登録
-        /// </summary>
-        /// <param name="unmanagedCred"></param>
-        /// <param name="flags"></param>
-        private static void Write(UnmanagedCredential unmanagedCred, CredFlags flags)
-        {
-            if (!Interop.CredWrite(ref unmanagedCred, flags))
-            {
-                Console.WriteLine(Interop.GetErrorMessage());
-                throw new ApplicationException("資格情報の書き込みに失敗しました。");
-            }
-
-            Console.WriteLine("ok");
-        }
         public void Delete() => Delete(TargetName, Type, Flags);
         /// <summary>
         /// 資格情報の削除
         /// </summary>
-        /// <param name="targetName"></param>
-        /// <param name="type"></param>
-        /// <param name="flags"></param>
-        private static void Delete(string targetName, CredType type, CredFlags flags)
+        /// <param name="TargetName"></param>
+        /// <param name="Type"></param>
+        /// <param name="Flags"></param>
+        private static void Delete(string TargetName, CredType Type, CredFlags Flags)
         {
-            if (!Interop.CredDelete(targetName, type, flags))
-            {
-                Console.WriteLine(Interop.GetErrorMessage());
-                throw new ApplicationException("資格情報の削除に失敗しました。");
-            }
+            if (!Interop.CredDelete(TargetName, Type, Flags))
+                throw new ApplicationException(Interop.GetErrorMessage());
         }
         public override string ToString()
             => $"{nameof(Credential)}{{"
