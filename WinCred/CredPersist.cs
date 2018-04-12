@@ -2,8 +2,8 @@
 {
     public enum CredPersist : uint
     {
-        SESSION = 1,
-        LOCAL_MACHINE = 2,
-        ENTERPRISE = 3,
+        Session = 1,
+        LocalMachine = 2,
+        Enterprise = 3,
     }
 }

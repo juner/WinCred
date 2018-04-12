@@ -5,7 +5,7 @@ namespace Advapi32.WinCred
     [Flags]
     public enum CredFlags : uint
     {
-        PROMPT_NOW = 0x2,
-        USERNAME_TARGET = 0x4
+        PromptNow = 0x2,
+        UsernameTarget = 0x4
     }
 }

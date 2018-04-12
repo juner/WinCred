@@ -97,7 +97,7 @@ namespace Advapi32.WinCred
             => $"{nameof(UnmanagedCredentialAttribute)} {{"
                 + $"{nameof(Keyword)}: {Keyword}"
                 + $", {nameof(Flags)}: {Flags}"
-                + $", {nameof(Value)}: [{(ValueSize > 0 ? string.Join(" ",Value) : "")}"
+                + $", {nameof(Value)}: [{(ValueSize > 0 ? string.Join(" ",Value) : "")}]"
                 + $"}}";
     }
 }

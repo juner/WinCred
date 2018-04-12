@@ -155,7 +155,16 @@ namespace Advapi32.WinCred
         }
         public override string ToString()
             => $"{nameof(UnmanagedCredential)}{{"
-            + $"{nameof(Flags)}:{Flags}"
+            + $"{nameof(Flags)}: {Flags}"
+            + $", {nameof(Type)}: {Type}"
+            + $", {nameof(TargetName)}: {TargetName}"
+            + $", {nameof(Comment)}: {Comment}"
+            + $", {nameof(LastWritten)}: {LastWritten}"
+            + $", {nameof(CredentialBlob)}: [{string.Join(" ", CredentialBlob?.Select(b => $"{b:X2}") ?? Enumerable.Empty<string>())}]"
+            + $", {nameof(Persist)}: {Persist}"
+            + $", {nameof(Attributes)}: [{string.Join(", ",Attributes?.Select(a => $"{a}") ?? Enumerable.Empty<string>())}]"
+            + $", {nameof(TargetAlias)}: {TargetAlias}"
+            + $", {nameof(UserName)}: {UserName}"
             + $"}}";
     }
     static class TimeExtension

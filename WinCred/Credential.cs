@@ -104,7 +104,7 @@ namespace Advapi32.WinCred
             + $", {nameof(LastWritten)}: {LastWritten}"
             + $", {nameof(CredentialBlob)}: [{string.Join(" ", CredentialBlob?.Select(b => $"{b:X2}") ?? Enumerable.Empty<string>())}]"
             + $", {nameof(Persist)}: {Persist}"
-            + $", {nameof(Attributes)}: [{string.Join(", ",Attributes?.Select(a => $"{a}") ?? Enumerable.Empty<string>())}]"
+            + $", {nameof(Attributes)}: [{string.Join(", ", Attributes?.Select(a => $"{a}") ?? Enumerable.Empty<string>())}]"
             + $", {nameof(TargetAlias)}: {TargetAlias}"
             + $", {nameof(UserName)}: {UserName}"
             + $"}}";
