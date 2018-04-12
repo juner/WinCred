@@ -45,8 +45,8 @@
     <Compile Include="CredFlags.cs" />
     <Compile Include="CredPersist.cs" />
     <Compile Include="CredType.cs" />
+    <Compile Include="CriticalCredentialArrayHandle.cs" />
     <Compile Include="CriticalCredentialHandle.cs" />
-    <Compile Include="IDisposableExtension.cs" />
     <Compile Include="Interop.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnmanagedCredential.cs" />
