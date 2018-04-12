@@ -30,29 +30,6 @@ namespace Advapi32.WinCred
                     Marshal.Copy(CredentialBlobPtr, bytes, 0, (int)CredentialBlobSize);
                 return bytes;
             }
-            set
-            {
-                if (value?.Length > 0)
-                {
-                    IntPtr p = IntPtr.Zero;
-                    CredentialBlobSize = (uint)value.Length;
-                    try
-                    {
-                        p = Marshal.AllocHGlobal(value.Length);
-                        Marshal.Copy(value, 0, p, value.Length);
-                        CredentialBlobPtr = p;
-                    }
-                    finally
-                    {
-                        Marshal.FreeHGlobal(p);
-                    }
-                }
-                else
-                {
-                    CredentialBlobPtr = IntPtr.Zero;
-                    CredentialBlobSize = 0;
-                }
-            }
         }
         public CredPersist Persist;
         private uint AttributeCount;
@@ -71,19 +48,6 @@ namespace Advapi32.WinCred
                     .Select(x => Marshal.ReadIntPtr(self.AttributesPtr, x * Size))
                     .Select(x => UnmanagedCredentialAttribute.From(x))
                     .ToArray();
-            }
-            set
-            {
-                if (value?.Length > 0)
-                {
-                    AttributeCount = (uint)value.Length;
-                    Marshal.Copy(value.Cast<int>().ToArray(), 0, AttributesPtr, value.Length);
-                }
-                else
-                {
-                    AttributeCount = 0;
-                    AttributesPtr = IntPtr.Zero;
-                }
             }
         }
         public string TargetAlias;
@@ -130,10 +94,6 @@ namespace Advapi32.WinCred
             UserName = Credential.UserName;
             AttributeCount = 0;
             AttributesPtr = IntPtr.Zero;
-            CredentialBlob = Credential.CredentialBlob;
-            Attributes = (Credential.Attributes ?? Enumerable.Empty<CredentialAttribute>())
-                .Select(ca => UnmanagedCredentialAttribute.From(ca))
-                .ToArray();
         }
         public Credential ToManaged()
         {

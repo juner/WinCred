@@ -27,17 +27,12 @@ namespace Advapi32.WinCred
 
         public string Password
         {
-            get
-            {
-                return CredentialBlob.Length > 0
-                    ? Encoding.UTF8.GetString(CredentialBlob)
-                    : string.Empty;
-            }
-            set
-            {
-                if (!string.IsNullOrEmpty(value))
-                    CredentialBlob = Encoding.UTF8.GetBytes(value);
-            }
+            get => CredentialBlob?.Length > 0
+                ? Encoding.Unicode.GetString(CredentialBlob)
+                : null;
+            set => CredentialBlob = string.IsNullOrEmpty(value)
+                        ? null
+                        : Encoding.Unicode.GetBytes(value);
         }
 
         /// <summary>
@@ -103,6 +98,7 @@ namespace Advapi32.WinCred
             + $", {nameof(Comment)}: {Comment}"
             + $", {nameof(LastWritten)}: {LastWritten}"
             + $", {nameof(CredentialBlob)}: [{string.Join(" ", CredentialBlob?.Select(b => $"{b:X2}") ?? Enumerable.Empty<string>())}]"
+            + $", {nameof(Password)}: {Password}"
             + $", {nameof(Persist)}: {Persist}"
             + $", {nameof(Attributes)}: [{string.Join(", ", Attributes?.Select(a => $"{a}") ?? Enumerable.Empty<string>())}]"
             + $", {nameof(TargetAlias)}: {TargetAlias}"
