@@ -13,6 +13,7 @@ namespace Advapi32.WinCred
     /// </summary>
     public class Credential
     {
+        internal const int CRED_MAX_VALUE_SIZE = 256;
         public CredFlags Flags { get; set; }
         public CredType Type { get; set; }
         public string TargetName { get; set; }

@@ -14,8 +14,14 @@ namespace Advapi32.WinCred.Tests
         [TestMethod()]
         public void EnumerateTest()
         {
-            foreach (var Credential in Credential.Enumerate())
-                System.Diagnostics.Debug.WriteLine(Credential);
+            try
+            {
+                foreach (var Credential in Credential.Enumerate())
+                    System.Diagnostics.Debug.WriteLine(Credential);
+            }catch(Exception e)
+            {
+                Assert.Fail(e.ToString());
+            }
         }
     }
 }

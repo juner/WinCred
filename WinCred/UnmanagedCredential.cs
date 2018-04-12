@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -56,41 +57,19 @@ namespace Advapi32.WinCred
         public CredPersist Persist;
         private uint AttributeCount;
         private IntPtr AttributesPtr;
-        public CredentialAttribute[] Attributes{
+        public UnmanagedCredentialAttribute[] Attributes{
             get
             {
                 System.Diagnostics.Debug.Assert(AttributesPtr == IntPtr.Zero ? AttributeCount == 0 : AttributeCount >= 0, $"{nameof(AttributeCount)}({AttributeCount})だけ設定され、{nameof(AttributesPtr)}(0x{AttributesPtr:X})が未設定。");
                 if (AttributeCount <= 0)
                     return null;
                 var self = this;
-                var Size = Marshal.SizeOf(typeof(CredentialAttribute));
-                var Ptrs = Enumerable
+                var Size = Marshal.SizeOf(typeof(UnmanagedCredentialAttribute));
+                var list = new UnmanagedCredentialAttribute[AttributeCount];
+                return Enumerable
                     .Range(0, (int)AttributeCount - 1)
-                    .Select(x => Marshal.ReadIntPtr(self.AttributesPtr, x * Size));
-                var Strs = Ptrs
-                    .Select(x => (CredentialAttribute)Marshal.PtrToStructure(x, typeof(CredentialAttribute)));
-
-                //var Strs = Ptrs
-                //    .Select(x =>
-                //    {
-                //        var bytes = new byte[Size];
-                //        Marshal.Copy(x, bytes, 0, Size);
-                //        return bytes;
-                //    })
-                //    .Select(bytes =>
-                //    {
-                //        GCHandle? handle = null;
-                //        try
-                //        {
-                //            handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                //            return (CredentialAttribute)Marshal.PtrToStructure(handle?.AddrOfPinnedObject() ?? IntPtr.Zero, typeof(CredentialAttribute));
-                //        }
-                //        finally
-                //        {
-                //            handle?.Free();
-                //        }
-                //    });
-                 return Strs
+                    .Select(x => Marshal.ReadIntPtr(self.AttributesPtr, x * Size))
+                    .Select(x => UnmanagedCredentialAttribute.From(x))
                     .ToArray();
             }
             set
@@ -133,7 +112,9 @@ namespace Advapi32.WinCred
             AttributeCount = 0;
             AttributesPtr = IntPtr.Zero;
             CredentialBlob = Credential.CredentialBlob;
-            Attributes = Credential.Attributes;
+            Attributes = (Credential.Attributes ?? Enumerable.Empty<CredentialAttribute>())
+                .Select(ca => UnmanagedCredentialAttribute.From(ca))
+                .ToArray();
         }
         public Credential ToCredential()
         {
@@ -146,7 +127,9 @@ namespace Advapi32.WinCred
                 LastWritten = LastWritten.ToDateTime(),
                 CredentialBlob = CredentialBlob,
                 Persist = Persist,
-                Attributes = Attributes,
+                Attributes = (Attributes ?? Enumerable.Empty<UnmanagedCredentialAttribute>())
+                    .Select(uca => uca.ToManaged())
+                    .ToArray(),
                 TargetAlias = TargetAlias,
                 UserName = UserName,
             };
