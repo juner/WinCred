@@ -70,13 +70,21 @@ namespace Advapi32.WinCred
             if (Interop.CredMarshalCredential(CredType, Credential, out var MarshaledCredential))
                 using (var getter = new CriticalCredGetterHandle<string>(MarshaledCredential, Marshal.PtrToStringUni))
                     return getter.Value;
-            throw Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
+            var hresult = Marshal.GetHRForLastWin32Error();
+            var exception = Marshal.GetExceptionForHR(hresult);
+            if (unchecked((uint)hresult) == 0x80070032)
+                throw new NotSupportedException("not support.", exception);
+            throw exception;
         }
         public static ICredGetterHandle<CredMarshalObject> UnmarshalCredential(string MarshaledCredential)
         {
             if (Interop.CredUnmarshalCredential(MarshaledCredential, out var CredType, out var Crednetial))
                 return new CriticalCredGetterHandle<CredMarshalObject>(Crednetial, c => new CredMarshalObject(CredType, c));
-            throw Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
+            var hresult = Marshal.GetHRForLastWin32Error();
+            var exception = Marshal.GetExceptionForHR(hresult);
+            if (unchecked((uint)hresult) == 0x80070032)
+                throw new NotSupportedException("not support.", exception);
+            throw exception;
         }
         public class CredMarshalObject
         {

@@ -61,7 +61,11 @@ namespace Advapi32.WinCred.Unmanaged
                     p => Enumerable.Range(0, count)
                              .Select(n => Marshal.ReadIntPtr(p, n * Size))
                              .Select(From));
-            throw Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
+            var hresult = Marshal.GetHRForLastWin32Error();
+            var exception = Marshal.GetExceptionForHR(hresult);
+            if (unchecked((uint)hresult) == 0x80070032)
+                throw new NotSupportedException("not support.", exception);
+            throw exception;
         }
         /// <summary>
         /// ポインタからの変換
@@ -72,7 +76,11 @@ namespace Advapi32.WinCred.Unmanaged
         {
             if (Interop.CredRead(TagetName, Type, Flags, out var CredentialPtr))
                 return new CriticalCredGetterHandle<Credential>(CredentialPtr,From);
-            throw Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
+            var hresult = Marshal.GetHRForLastWin32Error();
+            var exception = Marshal.GetExceptionForHR(hresult);
+            if (unchecked((uint)hresult) == 0x80070032)
+                throw new NotSupportedException("not support.", exception);
+            throw exception;
         }
         /// <summary>
         /// 資格情報の登録
@@ -81,8 +89,13 @@ namespace Advapi32.WinCred.Unmanaged
         /// <param name="Flags"></param>
         public void Write(CredWriteFlags Flags = default(CredWriteFlags))
         {
-            if (!Interop.CredWrite(ref this, Flags))
-                throw Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
+            if (Interop.CredWrite(ref this, Flags))
+                return;
+            var hresult = Marshal.GetHRForLastWin32Error();
+            var exception = Marshal.GetExceptionForHR(hresult);
+            if (unchecked((uint)hresult) == 0x80070032)
+                throw new NotSupportedException("not support.", exception);
+            throw exception;
         }
         /// <summary>
         /// 指定した認証情報を書き込みます。
@@ -129,8 +142,28 @@ namespace Advapi32.WinCred.Unmanaged
         /// <param name="Falgs"></param>
         public static void Delete(string TargetName, CredType Type, CredDeleteFlags Falgs = default(CredDeleteFlags))
         {
-            if (!Interop.CredDelete(TargetName, Type, Falgs))
-                throw Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
+            if (Interop.CredDelete(TargetName, Type, Falgs))
+                return;
+            var hresult = Marshal.GetHRForLastWin32Error();
+            var exception = Marshal.GetExceptionForHR(hresult);
+            if (unchecked((uint)hresult) == 0x80070032)
+                throw new NotSupportedException("not support.", exception);
+            throw exception;
+        }
+        public void Rename(string NewTargetName, CredType Type, CredRenameFlags Flags = default(CredRenameFlags))
+        {
+            Rename(TargetName, NewTargetName, Type, Flags);
+            TargetName = NewTargetName;
+        }
+        public static void Rename(string OldTargetName, string NewTargetName, CredType Type, CredRenameFlags Flags = default(CredRenameFlags))
+        {
+            if (Interop.CredRename(OldTargetName, NewTargetName, Type, Flags))
+                return;
+            var hresult = Marshal.GetHRForLastWin32Error();
+            var exception = Marshal.GetExceptionForHR(hresult);
+            if (unchecked((uint)hresult) == 0x80070032)
+                throw new NotSupportedException("not support.", exception);
+            throw exception;
         }
         /// <summary>
         /// マネージドな Credential からの生成

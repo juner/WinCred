@@ -23,6 +23,8 @@ namespace Advapi32.WinCred
         [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern bool CredDelete(string targetName, CredType type, CredDeleteFlags flags);
         [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern bool CredRename(string OldTargetName, string NewTargetName, CredType Type, CredRenameFlags Flags);
+        [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern bool CredProtect(bool AsSelf, StringBuilder Credentials, uint CredentialsSize, StringBuilder ProtectedCredentials, out uint ProtectedCredentialsSize, out CredProtectionType ProtectionType);
         [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern bool CredUnprotect(bool AsSelf, StringBuilder ProtectedCredentials, uint ProtectedCredentialsSize, StringBuilder Credentials, out uint CredentialsSize, ref uint MaxChars);

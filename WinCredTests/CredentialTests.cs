@@ -25,7 +25,7 @@ namespace Advapi32.WinCred.Tests
             }
         }
         [TestMethod()]
-        public void WriteAndReadAndDelete()
+        public void WriteAndReadAndDeleteTest()
         {
             var TargetName = "TESTTARGET";
             { 
@@ -57,7 +57,53 @@ namespace Advapi32.WinCred.Tests
                     Assert.AreEqual(unchecked((uint)e.HResult), 0x80070490,$"ELEMENT_NOT_FOUND ? -> 0x{unchecked((uint)e.HResult):X8}");
                 }
             }
+        }
+        [TestMethod()]
+        public void RenameTest()
+        {
+            var TargetName1 = "RENAMETARGETNAME";
+            var TargetName2 = "RENAMETARGETNAME2";
+            try
+            {
+                {
+                    var Credential = new Credential();
+                    Credential.LastWritten = DateTime.Now;
+                    Credential.Persist = CredPersist.LocalMachine;
+                    Credential.Flags = 0;
+                    Credential.Type = CredType.Generic;
+                    Credential.TargetName = TargetName1;
+                    Credential.UserName = "TESTUSER";
+                    Credential.Password = "TESTPASSWORD";
+                    Credential.TargetAlias = "TESTALIAS";
+                    Credential.Comment = "TESTCOMMENT 🌸";
+                    Credential.Write();
+                }
+                {
+                    var Credential = WinCred.Credential.Read(TargetName1, CredType.Generic);
+                    Credential.Rename(TargetName2, CredType.Generic);
+                }
+                {
+                    try
+                    {
 
+                        var Credential = WinCred.Credential.Read(TargetName1, CredType.Generic);
+                        Assert.Fail("not rename.");
+                    }
+                    catch (Exception e)
+                    {
+                        Assert.AreEqual(unchecked((uint)e.HResult), 0x80070490, $"ELEMENT_NOT_FOUND ? -> 0x{unchecked((uint)e.HResult):X8}");
+                    }
+                }
+                {
+                    var Credential = WinCred.Credential.Read(TargetName2, CredType.Generic);
+                    Assert.IsNotNull(Credential);
+                    Credential.Delete();
+                }
+            }
+            catch (NotSupportedException e)
+            {
+                throw new AssertInconclusiveException("サポートされていない操作です。", e);
+            }
         }
     }
 }
