@@ -23,10 +23,24 @@ namespace Advapi32.WinCred
         [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern bool CredRead(string targetName, CredType type, CredFlags flags, out IntPtr pCredential);
         [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern bool CredWrite(ref UnmanagedCredential credential, CredFlags flags);
+        public static extern bool CredGetSessionTypes(uint MaximumPersistCount, out CredPersist MaximumPersist);
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern bool CredMarshalCredential(CredMarshalType credType,
+                    IntPtr credential,
+                    // we need to get this as a pointer because we'll have
+                    // to release it later on calling CredFree().
+                    out IntPtr marshaledCredential);
+        [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern bool CredUnmarshalCredential(string marshaledCredential, out CredMarshalType credType, out IntPtr credential);
+        [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern bool CredIsMarshaledCredential(string MarshaledCredential);
+        [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern bool CredWrite(ref Unmanaged.Credential credential, CredFlags flags);
         [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern bool CredDelete(string targetName, CredType type, CredFlags flags);
         [DllImport("advapi32.dll", SetLastError = true)]
         public static extern bool CredFree(IntPtr buffer);
+        [DllImport("advapi32.dll", SetLastError = true)]
+        public static extern bool CredRenam(string OldTargetName, string NewTargetName, CredType Type, CredFlags Flags);
     }
 }

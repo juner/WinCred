@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace Advapi32.WinCred
+namespace Advapi32.WinCred.Unmanaged
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 4)]
-    public struct UnmanagedCredentialAttribute
+    public struct CredentialAttribute
     {
         public string Keyword;
         public uint Flags;
@@ -51,9 +51,9 @@ namespace Advapi32.WinCred
         /// </summary>
         /// <param name="ptr"></param>
         /// <returns></returns>
-        public static UnmanagedCredentialAttribute From(IntPtr Ptr)
+        public static CredentialAttribute From(IntPtr Ptr)
         {
-            return (UnmanagedCredentialAttribute)Marshal.PtrToStructure(Ptr, typeof(UnmanagedCredentialAttribute));
+            return (CredentialAttribute)Marshal.PtrToStructure(Ptr, typeof(CredentialAttribute));
             //var Size = Marshal.SizeOf(typeof(UnmanagedCredentialAttribute));
             //var bytes = new byte[Size];
             //Marshal.Copy(Ptr, bytes, 0, Size);
@@ -72,8 +72,8 @@ namespace Advapi32.WinCred
         /// </summary>
         /// <param name="attribute"></param>
         /// <returns></returns>
-        public static UnmanagedCredentialAttribute From(CredentialAttribute attribute)
-            => new UnmanagedCredentialAttribute
+        public static CredentialAttribute From(WinCred.CredentialAttribute attribute)
+            => new CredentialAttribute
             {
                 Keyword = attribute.Keyword,
                 Flags = attribute.Flags,
@@ -84,9 +84,9 @@ namespace Advapi32.WinCred
         /// マネージド版に変換する
         /// </summary>
         /// <returns></returns>
-        public CredentialAttribute ToManaged()
+        public WinCred.CredentialAttribute ToManaged()
         {
-            return new CredentialAttribute
+            return new WinCred.CredentialAttribute
             {
                 Keyword = Keyword,
                 Flags = Flags,
@@ -94,7 +94,7 @@ namespace Advapi32.WinCred
             };
         }
         public override string ToString()
-            => $"{nameof(UnmanagedCredentialAttribute)} {{"
+            => $"{nameof(CredentialAttribute)} {{"
                 + $"{nameof(Keyword)}: {Keyword}"
                 + $", {nameof(Flags)}: {Flags}"
                 + $", {nameof(Value)}: [{(ValueSize > 0 ? string.Join(" ",Value) : "")}]"
