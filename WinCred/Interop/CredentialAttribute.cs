@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace Advapi32.WinCred.Unmanaged
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 4)]
-    public struct CredentialAttribute
+    public struct CredentialAttribute : IUnmanaged<WinCred.CredentialAttribute>
     {
         public string Keyword;
         public uint Flags;
