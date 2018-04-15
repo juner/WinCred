@@ -17,6 +17,11 @@ namespace Advapi32.WinCred
                     .ToDictionary(v => v.Key, v => v.Value) ;
             throw Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
+        /// <summary>
+        /// ハッシュキーを信任状として文字列を生成する
+        /// </summary>
+        /// <param name="RgbHashOfCert"></param>
+        /// <returns></returns>
         public static string MarshalCredentialByCertCredential(byte[] RgbHashOfCert)
         {
             if (RgbHashOfCert == null)
@@ -41,6 +46,11 @@ namespace Advapi32.WinCred
                 Marshal.FreeCoTaskMem(Ptr);
             }
         }
+        /// <summary>
+        /// ユーザ名を信任状として文字列を生成する
+        /// </summary>
+        /// <param name="UsernameTarget"></param>
+        /// <returns></returns>
         public static string MarshalCredentialByUsername(string UsernameTarget)
         {
             var ut = new Unmanaged.UsernameTargetCredentialInfo
@@ -76,6 +86,11 @@ namespace Advapi32.WinCred
                 throw new NotSupportedException("not support.", exception);
             throw exception;
         }
+        /// <summary>
+        /// 文字列を信任状に変換する
+        /// </summary>
+        /// <param name="MarshaledCredential"></param>
+        /// <returns></returns>
         public static ICredGetterHandle<ICredMarshal> UnmarshalCredential(string MarshaledCredential)
         {
             if (Interop.CredUnmarshalCredential(MarshaledCredential, out var CredType, out var Crednetial))
@@ -89,7 +104,11 @@ namespace Advapi32.WinCred
                 throw new NotSupportedException("not support.", exception);
             throw exception;
         }
-
+        /// <summary>
+        /// その文字列が一度でも信任状から文字列に変換したものであるか
+        /// </summary>
+        /// <param name="marshaledCredential"></param>
+        /// <returns></returns>
         public static bool IsMarshalCredential(string marshaledCredential) => Interop.CredIsMarshaledCredential(marshaledCredential);
         public static void UIStoreSSOCred(string UserName, string Password, bool Persist) => UIStoreSSOCred(null, UserName, Password, Persist);
         public static void UIStoreSSOCred(string Realm, string UserName, string Password, bool Persist)
