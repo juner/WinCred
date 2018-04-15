@@ -39,7 +39,7 @@ namespace Advapi32.WinCred
         /// </summary>
         /// <returns></returns>
         public static IEnumerable<Credential> Enumerate(string Filter = null, CredEnumerateFlags CredFlags = default(CredEnumerateFlags))
-            => Unmanaged.Credential.Enumerate(Filter, CredFlags).Using().SelectMany(h => h.Value).Select(uc => uc.ToManaged());
+            => Unmanaged.Credential.Enumerate(Filter, CredFlags).Using(h => h.Value).Select(uc => uc.ToManaged());
         /// <summary>
         /// 資格情報の読込
         /// </summary>
