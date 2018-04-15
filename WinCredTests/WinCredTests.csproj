@@ -65,7 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WinCred\WinCred.csproj">
-      <Project>{4E4823B4-D2B0-4C55-9B9E-925340A618DD}</Project>
+      <Project>{4e4823b4-d2b0-4c55-9b9e-925340a618dd}</Project>
       <Name>WinCred</Name>
     </ProjectReference>
   </ItemGroup>

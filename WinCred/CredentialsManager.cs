@@ -17,16 +17,16 @@ namespace Advapi32.WinCred
                     .ToDictionary(v => v.Key, v => v.Value) ;
             throw Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
-        public static string MarshalCredentialAtCertCredential(byte[] RgbHashOfCert)
+        public static string MarshalCredentialByCertCredential(byte[] RgbHashOfCert)
         {
             if (RgbHashOfCert == null)
                 throw new ArgumentNullException(nameof(RgbHashOfCert));
             if (RgbHashOfCert?.Length != 20)
                 throw new ArgumentException("Length は 20 の必要があります。", nameof(RgbHashOfCert));
-            var certInfo = new CertCredentialInfo
+            var certInfo = new Unmanaged.CertCredentialInfo
             {
-                cbSize = (uint)Marshal.SizeOf(nameof(CertCredentialInfo)),
-                rgbHashOfCert = RgbHashOfCert,
+                Size = (uint)Marshal.SizeOf(typeof(Unmanaged.CertCredentialInfo)),
+                RgbHashOfCert = RgbHashOfCert,
             };
             int size = Marshal.SizeOf(certInfo);
 
@@ -41,9 +41,9 @@ namespace Advapi32.WinCred
                 Marshal.FreeCoTaskMem(Ptr);
             }
         }
-        public static string MarshalCredentialAtUsername(string UsernameTarget)
+        public static string MarshalCredentialByUsername(string UsernameTarget)
         {
-            var ut = new UsernameTargetCredentialInfo
+            var ut = new Unmanaged.UsernameTargetCredentialInfo
             {
                 UserName = UsernameTarget,
             };
@@ -76,40 +76,20 @@ namespace Advapi32.WinCred
                 throw new NotSupportedException("not support.", exception);
             throw exception;
         }
-        public static ICredGetterHandle<CredMarshalObject> UnmarshalCredential(string MarshaledCredential)
+        public static ICredGetterHandle<ICredMarshal> UnmarshalCredential(string MarshaledCredential)
         {
             if (Interop.CredUnmarshalCredential(MarshaledCredential, out var CredType, out var Crednetial))
-                return new CriticalCredGetterHandle<CredMarshalObject>(Crednetial, c => new CredMarshalObject(CredType, c));
+                return new CriticalCredGetterHandle<ICredMarshal>(Crednetial, c => 
+                    CredType == CredMarshalType.CertCredential ? new CertCredentialInfo(c)
+                    : CredType == CredMarshalType.UsernameTargetCredential ? new UsernameTargetCredentialInfo(c)
+                    : new BaseCredentialInfo(CredType,c));
             var hresult = Marshal.GetHRForLastWin32Error();
             var exception = Marshal.GetExceptionForHR(hresult);
             if (unchecked((uint)hresult) == 0x80070032)
                 throw new NotSupportedException("not support.", exception);
             throw exception;
         }
-        public class CredMarshalObject
-        {
-            public readonly CredMarshalType Type;
-            public readonly byte[] RgbHashOfCert = null;
-            public readonly string UserName = null;
-            public CredMarshalObject(CredMarshalType Type, IntPtr Credential)
-            {
-                this.Type = Type;
-                switch (Type)
-                {
-                    case CredMarshalType.CertCredential:
-                        var CredentialInfo = Marshal.PtrToStructure<CertCredentialInfo>(Credential);
-                        RgbHashOfCert = CredentialInfo.rgbHashOfCert;
-                        break;
-                    case CredMarshalType.UsernameTargetCredential:
-                        var UsernameTargetCredentialInfo = Marshal.PtrToStructure<UsernameTargetCredentialInfo>(Credential);
-                        UserName = UsernameTargetCredentialInfo.UserName;
-                        break;
-                    default:
-                        System.Diagnostics.Debug.WriteLine($"{Type} is not support.");
-                        break;
-                }
-            }
-        }
+
         public static bool IsMarshalCredential(string marshaledCredential) => Interop.CredIsMarshaledCredential(marshaledCredential);
         public static void UIStoreSSOCred(string UserName, string Password, bool Persist) => UIStoreSSOCred(null, UserName, Password, Persist);
         public static void UIStoreSSOCred(string Realm, string UserName, string Password, bool Persist)

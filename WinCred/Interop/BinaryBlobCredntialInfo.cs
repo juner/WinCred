@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace Advapi32.WinCred
+namespace Advapi32.WinCred.Unmanaged
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct BinaryBlobCredntialInfo

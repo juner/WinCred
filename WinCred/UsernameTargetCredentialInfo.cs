@@ -1,10 +1,15 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace Advapi32.WinCred
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct UsernameTargetCredentialInfo
+    public class UsernameTargetCredentialInfo : BaseCredentialInfo
     {
-        public string UserName;
+        public string UserName { get; }
+        public UsernameTargetCredentialInfo(IntPtr Credential) : base(CredMarshalType.UsernameTargetCredential, Credential)
+        {
+            var info = Marshal.PtrToStructure<Unmanaged.UsernameTargetCredentialInfo>(Credential);
+            UserName = info.UserName;
+        }
     }
 }
