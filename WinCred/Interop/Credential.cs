@@ -195,7 +195,7 @@ namespace Advapi32.WinCred.Unmanaged
                 LastWritten = LastWritten.ToDateTime(),
                 CredentialBlob = CredentialBlob,
                 Persist = Persist,
-                //Attributes = (Attributes ?? Enumerable.Empty<UnmanagedCredentialAttribute>())
+                //Attributes = (Attributes ?? Enumerable.Empty<CredentialAttribute>())
                 //    .Select(uca => uca.ToManaged())
                 //    .ToArray(),
                 TargetAlias = TargetAlias,

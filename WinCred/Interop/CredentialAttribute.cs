@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Advapi32.WinCred.Unmanaged
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto, Pack = 4)]
     public struct CredentialAttribute : IUnmanaged<WinCred.CredentialAttribute>
     {
+        [MarshalAs(UnmanagedType.LPWStr)]
         public string Keyword;
         public uint Flags;
         uint ValueSize;
@@ -54,13 +56,13 @@ namespace Advapi32.WinCred.Unmanaged
         public static CredentialAttribute From(IntPtr Ptr)
         {
             return (CredentialAttribute)Marshal.PtrToStructure(Ptr, typeof(CredentialAttribute));
-            //var Size = Marshal.SizeOf(typeof(UnmanagedCredentialAttribute));
+            //var Size = Marshal.SizeOf(typeof(CredentialAttribute));
             //var bytes = new byte[Size];
-            //Marshal.Copy(Ptr, bytes, 0, Size);
-            //var Keyword = Marshal.PtrToStringBSTR(new IntPtr(BitConverter.ToInt32(bytes, 0)));
-            //var Flags = BitConverter.ToUInt32(bytes, 4);
+            //var KeywordPtr = Marshal.ReadIntPtr(Ptr, 0);
+            //var Keyword = Marshal.PtrToStringUni(KeywordPtr);
+            //var Flags = (uint)Marshal.ReadInt32(Ptr, 4);
             //var _Value = new IntPtr(BitConverter.ToInt32(bytes, 8));
-            //return new UnmanagedCredentialAttribute
+            //return new CredentialAttribute
             //{
             //    Keyword = Keyword,
             //    Flags = Flags,
