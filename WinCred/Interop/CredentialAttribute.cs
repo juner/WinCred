@@ -10,18 +10,18 @@ namespace Advapi32.WinCred.Unmanaged
         [MarshalAs(UnmanagedType.LPWStr)]
         public string Keyword;
         public uint Flags;
-        uint ValueSize;
-        IntPtr _Value;
+        internal uint ValueSize;
+        internal IntPtr ValuePtr;
         public byte[] Value
         {
             get
             {
-                System.Diagnostics.Debug.Assert(_Value == IntPtr.Zero ? ValueSize == 0 : ValueSize >= 0, $"{nameof(ValueSize)}だけ初期化されて、{nameof(_Value)}が初期化されていない。");
-                if (_Value == IntPtr.Zero)
+                System.Diagnostics.Debug.Assert(ValuePtr == IntPtr.Zero ? ValueSize == 0 : ValueSize >= 0, $"{nameof(ValueSize)}だけ初期化されて、{nameof(ValuePtr)}が初期化されていない。");
+                if (ValuePtr == IntPtr.Zero)
                     return null;
                 var bytes = new byte[ValueSize];
                 if (ValueSize > 0)
-                    Marshal.Copy(_Value, bytes, 0, (int)ValueSize);
+                    Marshal.Copy(ValuePtr, bytes, 0, (int)ValueSize);
                 return bytes;
             }
             set
@@ -34,7 +34,7 @@ namespace Advapi32.WinCred.Unmanaged
                     {
                         p = Marshal.AllocHGlobal(value.Length);
                         Marshal.Copy(value, 0, p, value.Length);
-                        _Value = p;
+                        ValuePtr = p;
                     }
                     finally
                     {
@@ -43,7 +43,7 @@ namespace Advapi32.WinCred.Unmanaged
                 }
                 else
                 {
-                    _Value = IntPtr.Zero;
+                    ValuePtr = IntPtr.Zero;
                     ValueSize = 0;
                 }
             }
@@ -53,22 +53,7 @@ namespace Advapi32.WinCred.Unmanaged
         /// </summary>
         /// <param name="ptr"></param>
         /// <returns></returns>
-        public static CredentialAttribute From(IntPtr Ptr)
-        {
-            return (CredentialAttribute)Marshal.PtrToStructure(Ptr, typeof(CredentialAttribute));
-            //var Size = Marshal.SizeOf(typeof(CredentialAttribute));
-            //var bytes = new byte[Size];
-            //var KeywordPtr = Marshal.ReadIntPtr(Ptr, 0);
-            //var Keyword = Marshal.PtrToStringUni(KeywordPtr);
-            //var Flags = (uint)Marshal.ReadInt32(Ptr, 4);
-            //var _Value = new IntPtr(BitConverter.ToInt32(bytes, 8));
-            //return new CredentialAttribute
-            //{
-            //    Keyword = Keyword,
-            //    Flags = Flags,
-            //    _Value = _Value,
-            //};
-        }
+        public static CredentialAttribute From(IntPtr Ptr) => Marshal.PtrToStructure<CredentialAttribute>(Ptr);
         /// <summary>
         /// マネージドからインスタンスを作成する
         /// </summary>
@@ -79,8 +64,23 @@ namespace Advapi32.WinCred.Unmanaged
             {
                 Keyword = attribute.Keyword,
                 Flags = attribute.Flags,
-                Value = attribute.Value,
+                //ValueSize = (uint)attribute.Value.Length,
+                //Value = attribute.Value,
             };
+        public IDisposable Copy(WinCred.CredentialAttribute attribute)
+        {
+            Keyword = attribute.Keyword;
+            Flags = attribute.Flags;
+            ValueSize = (uint)attribute.Value.Length;
+            var Ptr = ValuePtr = Marshal.AllocCoTaskMem((int)ValueSize);
+            Marshal.Copy(attribute.Value, 0, ValuePtr, (int)ValueSize);
+            return Disposable.Create(() =>
+            {
+                if (Ptr != IntPtr.Zero)
+                    Marshal.FreeCoTaskMem(Ptr);
+                Ptr = IntPtr.Zero;
+            });
+        }
 
         /// <summary>
         /// マネージド版に変換する

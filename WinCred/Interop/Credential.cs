@@ -32,6 +32,32 @@ namespace Advapi32.WinCred.Unmanaged
                 return bytes;
             }
         }
+        public IDisposable CopyCredentialBlob(byte[] CredentialBlob)
+        {
+            this.CredentialBlobPtr = IntPtr.Zero;
+            var CredentialBlobSize = CredentialBlob?.Length ?? 0;
+            this.CredentialBlobSize = (uint)CredentialBlobSize;
+            if (CredentialBlobSize < 1)
+                return Disposable.Noop();
+            var CredentialBlobPtr = Marshal.AllocCoTaskMem(sizeof(byte) * CredentialBlobSize);
+            var ResultDispose = Disposable.Create(() =>
+            {
+                if (CredentialBlobPtr != IntPtr.Zero)
+                    Marshal.FreeCoTaskMem(CredentialBlobPtr);
+                CredentialBlobPtr = IntPtr.Zero;
+            });
+            try
+            {
+                Marshal.Copy(CredentialBlob, 0, CredentialBlobPtr, CredentialBlobSize);
+                this.CredentialBlobPtr = CredentialBlobPtr;
+                return ResultDispose;
+            }
+            catch
+            {
+                ResultDispose?.Dispose();
+                throw;
+            }
+        }
         public CredPersist Persist;
         private uint AttributeCount;
         private IntPtr AttributesPtr;
@@ -43,13 +69,48 @@ namespace Advapi32.WinCred.Unmanaged
                     return null;
                 var self = this;
                 var Size = Marshal.SizeOf(typeof(CredentialAttribute));
-                var list = new CredentialAttribute[AttributeCount];
                 return Enumerable
-                    .Range(0, (int)AttributeCount - 1)
-                    .Select(x => Marshal.ReadIntPtr(self.AttributesPtr, x * Size))
+                    .Range(0, (int)AttributeCount)
+                    .Select(x => IntPtr.Add(self.AttributesPtr, x * Size))
                     .Select(x => CredentialAttribute.From(x))
                     .ToArray();
             }
+        }
+        public IDisposable CopyAttributes(WinCred.CredentialAttribute[] Attributes)
+        {
+            this.AttributesPtr = IntPtr.Zero;
+            var AttributeCount = Attributes?.Length ?? 0;
+            this.AttributeCount = (uint)AttributeCount;
+            if (AttributeCount < 1)
+                return Disposable.Noop();
+            var Disposables = new List<IDisposable>();
+            var Size = Marshal.SizeOf<CredentialAttribute>();
+            var AttributesPtr = Marshal.AllocCoTaskMem(Size * AttributeCount);
+            var ResultDispose = Disposable.Create(() =>
+            {
+                foreach (var d in Enumerable.Reverse(Disposables))
+                    d?.Dispose();
+            });
+            Disposables.Add(Disposable.Create(() => {
+                if (AttributesPtr != IntPtr.Zero)
+                    Marshal.FreeCoTaskMem(AttributesPtr);
+            }));
+            try
+            {
+                foreach (var t in Attributes.Select((a, i) => (i: i, attr: a, ptr: IntPtr.Add(AttributesPtr, i * Size))))
+                {
+                    var newAttr = new CredentialAttribute();
+                    var dispose = newAttr.Copy(t.attr);
+                    Disposables.Add(dispose);
+                    Marshal.StructureToPtr(newAttr, t.ptr, false);
+                }
+            }
+            catch
+            {
+                ResultDispose?.Dispose();
+                throw;
+            }
+            return ResultDispose;
         }
         public string TargetAlias;
         public string UserName;
@@ -71,7 +132,7 @@ namespace Advapi32.WinCred.Unmanaged
         /// ポインタからの変換
         /// </summary>
         /// <param name="ptr"></param>
-        public static Credential From(IntPtr ptr) => (Credential)Marshal.PtrToStructure(ptr, typeof(Credential));
+        public static Credential From(IntPtr ptr) => Marshal.PtrToStructure<Credential>(ptr);
         public static ICredGetterHandle<Credential> Read(string TagetName, CredType Type = default(CredType), CredReadFlags Flags = default(CredReadFlags))
         {
             if (Interop.CredRead(TagetName, Type, Flags, out var CredentialPtr))
@@ -104,33 +165,45 @@ namespace Advapi32.WinCred.Unmanaged
         /// <param name="Flags"></param>
         public static void Write(WinCred.Credential Credential,CredWriteFlags Flags)
         {
-            var CredentialBlobPtr = IntPtr.Zero;
-            var AttributePtr = IntPtr.Zero;
+            var uc = new Credential();
+            using (uc.Copy(Credential))
+                uc.Write(Flags);
+        }
+        /// <summary>
+        /// マネージドの値を元にアンマネージドにコピーする
+        /// </summary>
+        /// <param name="Credential"></param>
+        /// <returns>解放用のオブジェクト</returns>
+        public IDisposable Copy(WinCred.Credential Credential)
+        {
+            var Disposables = new List<IDisposable>();
+            var ResultDisposable = Disposable.Create(() =>
+            {
+                foreach (var d in Enumerable.Reverse(Disposables))
+                    d?.Dispose();
+            });
             try
             {
-                var uc = new Credential(Credential)
-                {
-                    CredentialBlobSize = (uint)(Credential.CredentialBlob?.Length ?? 0),
-                    AttributeCount = (uint)(Credential.Attributes?.Length ?? 0),
-                };
-                if (uc.CredentialBlobSize > 0)
-                {
-                    uc.CredentialBlobPtr = CredentialBlobPtr = Marshal.AllocCoTaskMem(sizeof(byte) * (int)uc.CredentialBlobSize);
-                    Marshal.Copy(Credential.CredentialBlob, 0, uc.CredentialBlobPtr, Credential.CredentialBlob.Length);
-                }
-                if (uc.AttributeCount > 0)
-                {
-                    uc.AttributesPtr = AttributePtr = Marshal.AllocCoTaskMem(Marshal.SizeOf(typeof(CredentialAttribute)) * (int)uc.AttributeCount);
-                    Marshal.StructureToPtr(Credential.Attributes, uc.AttributesPtr, false);
-                }
-                uc.Write(Flags);
+                Flags = Credential.Flags;
+                Type = Credential.Type;
+                TargetName = Credential.TargetName;
+                Comment = Credential.Comment;
+                LastWritten = Credential.LastWritten.ToFILETIMEStructure();
+                CredentialBlobSize = 0;
+                CredentialBlobPtr = IntPtr.Zero;
+                Persist = Credential.Persist;
+                TargetAlias = Credential.TargetAlias;
+                UserName = Credential.UserName;
+                AttributeCount = 0;
+                AttributesPtr = IntPtr.Zero;
+                Disposables.Add(CopyAttributes(Credential.Attributes));
+                Disposables.Add(CopyCredentialBlob(Credential.CredentialBlob));
+                return ResultDisposable;
             }
-            finally
+            catch
             {
-                if (CredentialBlobPtr != IntPtr.Zero)
-                    Marshal.FreeCoTaskMem(CredentialBlobPtr);
-                if (AttributePtr != IntPtr.Zero)
-                    Marshal.FreeCoTaskMem(AttributePtr);
+                ResultDisposable?.Dispose();
+                throw;
             }
         }
         public void Delete(CredDeleteFlags Flags = default(CredDeleteFlags)) => Delete(TargetName, Type, Flags);
@@ -195,9 +268,9 @@ namespace Advapi32.WinCred.Unmanaged
                 LastWritten = LastWritten.ToDateTime(),
                 CredentialBlob = CredentialBlob,
                 Persist = Persist,
-                //Attributes = (Attributes ?? Enumerable.Empty<CredentialAttribute>())
-                //    .Select(uca => uca.ToManaged())
-                //    .ToArray(),
+                Attributes = (Attributes ?? Enumerable.Empty<CredentialAttribute>())
+                    .Select(uca => uca.ToManaged())
+                    .ToArray(),
                 TargetAlias = TargetAlias,
                 UserName = UserName,
             };
