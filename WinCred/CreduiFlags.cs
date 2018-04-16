@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Advapi32.WinCred
+namespace Credui.WinCred
 {
     [Flags]
     public enum CreduiFlags : uint

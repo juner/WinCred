@@ -1,4 +1,4 @@
-﻿namespace Advapi32.WinCred
+﻿namespace Credui.WinCred
 {
     public enum CredUIReturnCodes : uint
     {

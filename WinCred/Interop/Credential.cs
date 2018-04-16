@@ -61,7 +61,8 @@ namespace Advapi32.WinCred.Unmanaged
         public CredPersist Persist;
         private uint AttributeCount;
         private IntPtr AttributesPtr;
-        public CredentialAttribute[] Attributes{
+        public CredentialAttribute[] Attributes
+        {
             get
             {
                 System.Diagnostics.Debug.Assert(AttributesPtr == IntPtr.Zero ? AttributeCount == 0 : AttributeCount >= 0, $"{nameof(AttributeCount)}({AttributeCount})だけ設定され、{nameof(AttributesPtr)}(0x{AttributesPtr:X})が未設定。");
@@ -91,7 +92,8 @@ namespace Advapi32.WinCred.Unmanaged
                 foreach (var d in Enumerable.Reverse(Disposables))
                     d?.Dispose();
             });
-            Disposables.Add(Disposable.Create(() => {
+            Disposables.Add(Disposable.Create(() =>
+            {
                 if (AttributesPtr != IntPtr.Zero)
                     Marshal.FreeCoTaskMem(AttributesPtr);
             }));
@@ -118,10 +120,7 @@ namespace Advapi32.WinCred.Unmanaged
         {
             var Size = Marshal.SizeOf(typeof(IntPtr));
             if (Interop.CredEnumerate(Filter, CredFlags, out var count, out var pCredentials))
-                return new CriticalCredGetterHandle<IEnumerable<Credential>>(pCredentials,
-                    p => Enumerable.Range(0, count)
-                             .Select(n => Marshal.ReadIntPtr(p, n * Size))
-                             .Select(From));
+                return new CriticalCredGetterHandle<IEnumerable<Credential>>(pCredentials, p => Froms(count,p));
             var hresult = Marshal.GetHRForLastWin32Error();
             var exception = Marshal.GetExceptionForHR(hresult);
             if (unchecked((uint)hresult) == 0x80070032)
@@ -133,10 +132,17 @@ namespace Advapi32.WinCred.Unmanaged
         /// </summary>
         /// <param name="ptr"></param>
         public static Credential From(IntPtr ptr) => Marshal.PtrToStructure<Credential>(ptr);
+        public static IEnumerable<Credential> Froms(int count, IntPtr p)
+        {
+            var Size = Marshal.SizeOf(typeof(IntPtr));
+            return Enumerable.Range(0, count)
+                .Select(n => Marshal.ReadIntPtr(p, n * Size))
+                .Select(From);
+        }
         public static ICredGetterHandle<Credential> Read(string TagetName, CredType Type = default(CredType), CredReadFlags Flags = default(CredReadFlags))
         {
             if (Interop.CredRead(TagetName, Type, Flags, out var CredentialPtr))
-                return new CriticalCredGetterHandle<Credential>(CredentialPtr,From);
+                return new CriticalCredGetterHandle<Credential>(CredentialPtr, From);
             var hresult = Marshal.GetHRForLastWin32Error();
             var exception = Marshal.GetExceptionForHR(hresult);
             if (unchecked((uint)hresult) == 0x80070032)
@@ -163,7 +169,7 @@ namespace Advapi32.WinCred.Unmanaged
         /// </summary>
         /// <param name="Credential">認証情報</param>
         /// <param name="Flags"></param>
-        public static void Write(WinCred.Credential Credential,CredWriteFlags Flags)
+        public static void Write(WinCred.Credential Credential, CredWriteFlags Flags)
         {
             var uc = new Credential();
             using (uc.Copy(Credential))
@@ -284,7 +290,7 @@ namespace Advapi32.WinCred.Unmanaged
             + $", {nameof(LastWritten)}: {LastWritten}"
             + $", {nameof(CredentialBlob)}: [{string.Join(" ", CredentialBlob?.Select(b => $"{b:X2}") ?? Enumerable.Empty<string>())}]"
             + $", {nameof(Persist)}: {Persist}"
-            + $", {nameof(Attributes)}: [{string.Join(", ",Attributes?.Select(a => $"{a}") ?? Enumerable.Empty<string>())}]"
+            + $", {nameof(Attributes)}: [{string.Join(", ", Attributes?.Select(a => $"{a}") ?? Enumerable.Empty<string>())}]"
             + $", {nameof(TargetAlias)}: {TargetAlias}"
             + $", {nameof(UserName)}: {UserName}"
             + $"}}";

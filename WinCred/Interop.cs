@@ -32,16 +32,23 @@ namespace Advapi32.WinCred
         public static extern bool CredFree(IntPtr buffer);
         [DllImport("advapi32.dll", SetLastError = true)]
         public static extern bool CredRenam(string OldTargetName, string NewTargetName, CredType Type, CredFlags Flags);
+        [DllImport("advapi32.dll", SetLastError = true)]
+        public static extern bool CredGetTargetInfo(string TargetName, CredGetTargetInfoFlags Flags, out IntPtr TargetInfo);
+        [DllImport("advapi32.dll", SetLastError = true)]
+        public static extern bool CredReadDomainCredentials(ref Unmanaged.CredentialTargetInformation TargetInfo, CredReadDomainCredentialsFlags Flags, out uint Count, out IntPtr Credentials);
+        [DllImport("advapi32.dll", SetLastError = true)]
+        public static extern bool CredWriteDomainCredentials(ref Unmanaged.CredentialTargetInformation TargetInfo, ref Unmanaged.Credential Credential, CredWriteDomainCredentialsFlag Flags);
+    }
+}
+namespace Credui.WinCred
+{
+    internal static class Interop
+    {
         [DllImport("credui.dll", CharSet = CharSet.Unicode)]
-        private static extern CredUIReturnCodes CredUIPromptForCredentials(ref CreduiInfo creditUR,
-            string targetName,
-            IntPtr reserved1,
-            int iError,
-            ref string userName,
-            int maxUserName,
-            ref string password,
-            int maxPassword,
-            [MarshalAs(UnmanagedType.Bool)] ref bool pfSave,
-            CreduiFlags flags);
+        public static extern CredUIReturnCodes CredUIPromptForCredentials(ref CreduiInfo UiInfo, string targetName, IntPtr Reserved, int AuthError, ref string UserName, int MaxUserName, ref string Password, int MaxPassword, [MarshalAs(UnmanagedType.Bool)] ref bool Save, CreduiFlags Flags);
+        [DllImport("credui.dll", CharSet = CharSet.Unicode)]
+        public static extern bool CredUIParseUserName(string UserName, out string User, uint UserMaxChars, out string Domain, uint DomainMaxChars);
+        [DllImport("credui.dll", CharSet = CharSet.Unicode)]
+        public static extern CredUIReturnCodes CredUICmdLinePromptForCredentials(string TargetName, IntPtr Reserved, uint AuthError, ref string UserName, uint UserNameMaxChars, ref string Password, uint PasswordMaxChars, ref bool Save, uint Flags);
     }
 }
