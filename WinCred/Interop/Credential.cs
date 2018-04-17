@@ -229,21 +229,6 @@ namespace Advapi32.WinCred.Unmanaged
                 throw new NotSupportedException("not support.", exception);
             throw exception;
         }
-        public void Rename(string NewTargetName, CredType Type, CredRenameFlags Flags = default(CredRenameFlags))
-        {
-            Rename(TargetName, NewTargetName, Type, Flags);
-            TargetName = NewTargetName;
-        }
-        public static void Rename(string OldTargetName, string NewTargetName, CredType Type, CredRenameFlags Flags = default(CredRenameFlags))
-        {
-            if (Interop.CredRename(OldTargetName, NewTargetName, Type, Flags))
-                return;
-            var hresult = Marshal.GetHRForLastWin32Error();
-            var exception = Marshal.GetExceptionForHR(hresult);
-            if (unchecked((uint)hresult) == 0x80070032)
-                throw new NotSupportedException("not support.", exception);
-            throw exception;
-        }
         /// <summary>
         /// マネージドな Credential からの生成
         /// </summary>

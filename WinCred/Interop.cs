@@ -22,16 +22,14 @@ namespace Advapi32.WinCred
         public static extern bool CredWrite(ref Unmanaged.Credential credential, CredWriteFlags flags);
         [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern bool CredDelete(string targetName, CredType type, CredDeleteFlags flags);
-        [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern bool CredRename(string OldTargetName, string NewTargetName, CredType Type, CredRenameFlags Flags);
+        //[DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
+        //public static extern bool CredRename(string OldTargetName, string NewTargetName, CredType Type, CredRenameFlags Flags);
         [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern bool CredProtect(bool AsSelf, StringBuilder Credentials, uint CredentialsSize, StringBuilder ProtectedCredentials, out uint ProtectedCredentialsSize, out CredProtectionType ProtectionType);
         [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern bool CredUnprotect(bool AsSelf, StringBuilder ProtectedCredentials, uint ProtectedCredentialsSize, StringBuilder Credentials, out uint CredentialsSize, ref uint MaxChars);
         [DllImport("advapi32.dll", SetLastError = true)]
         public static extern bool CredFree(IntPtr buffer);
-        [DllImport("advapi32.dll", SetLastError = true)]
-        public static extern bool CredRenam(string OldTargetName, string NewTargetName, CredType Type, CredFlags Flags);
         [DllImport("advapi32.dll", SetLastError = true)]
         public static extern bool CredGetTargetInfo(string TargetName, CredGetTargetInfoFlags Flags, out IntPtr TargetInfo);
         [DllImport("advapi32.dll", SetLastError = true)]
@@ -44,11 +42,33 @@ namespace Credui.WinCred
 {
     internal static class Interop
     {
-        [DllImport("credui.dll", CharSet = CharSet.Unicode)]
-        public static extern CredUIReturnCodes CredUIPromptForCredentials(ref CreduiInfo UiInfo, string targetName, IntPtr Reserved, int AuthError, ref string UserName, int MaxUserName, ref string Password, int MaxPassword, [MarshalAs(UnmanagedType.Bool)] ref bool Save, CreduiFlags Flags);
-        [DllImport("credui.dll", CharSet = CharSet.Unicode)]
+        [DllImport("credui.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern CredUIReturnCodes CredUIPromptForWindowsCredentials(in CreduiInfo CredInfo, int AuthError, ref uint AuthPackage, IntPtr InAuthBuffer, uint InAuthBufferSize, out IntPtr OutAuthBuffer, out uint OutAuthBufferSize, ref bool Save, CredUiWinFlags Flags);
+        [DllImport("credui.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern bool CredUIParseUserName(string UserName, out string User, uint UserMaxChars, out string Domain, uint DomainMaxChars);
-        [DllImport("credui.dll", CharSet = CharSet.Unicode)]
-        public static extern CredUIReturnCodes CredUICmdLinePromptForCredentials(string TargetName, IntPtr Reserved, uint AuthError, ref string UserName, uint UserNameMaxChars, ref string Password, uint PasswordMaxChars, ref bool Save, uint Flags);
+        [DllImport("credui.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern CredUIReturnCodes CredUICmdLinePromptForCredentials(string TargetName, IntPtr Reserved, int AuthError, StringBuilder UserName, uint UserNameMaxChars, StringBuilder Password, uint PasswordMaxChars, ref bool Save, CreduiFlags Flags);
+        [DllImport("credui.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern CredUIReturnCodes CredUIStoreSSOCred(string Realm, string UserName, string Password, bool Persist);
+        [DllImport("credui.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern CredUIReturnCodes CredUIReadSSOCred(string Realm, out IntPtr UserName);
+        [DllImport("credui.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern bool CredUnPackAuthenticationBuffer(CredPackFlags Flags, IntPtr AuthBuffer, uint AuthBufferSize, StringBuilder UserName, ref uint MaxUserName, StringBuilder DomainName, ref uint MaxDomainname, StringBuilder Password, ref uint MaxPassword);
+        [DllImport("credui.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern Boolean CredPackAuthenticationBuffer(CredPackFlags Flags, string UserName, string Password, IntPtr PackedCredentials, ref uint PackedCredentialsSize);
+    }
+    public enum CredPackFlags : uint
+    {
+        ProtectedCredentials = 0x1,
+        WowBuffer = 0x2,
+        GenericCredentials = 0x4,
+    }
+}
+namespace Kernel32
+{
+    internal static class Interop
+    {
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr LocalFree(IntPtr hMem);
     }
 }

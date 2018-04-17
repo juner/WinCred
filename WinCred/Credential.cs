@@ -70,26 +70,6 @@ namespace Advapi32.WinCred
         /// <param name="Flags"></param>
         public static void Delete(string TargetName, CredType Type, CredDeleteFlags Flags = default(CredDeleteFlags))
             => Unmanaged.Credential.Delete(TargetName, Type, Flags);
-        /// <summary>
-        /// 資格情報名の変更
-        /// </summary>
-        /// <param name="NewTargetName"></param>
-        /// <param name="Type"></param>
-        /// <param name="Flags"></param>
-        public void Rename(string NewTargetName, CredType Type,CredRenameFlags Flags = default(CredRenameFlags))
-        {
-            Rename(TargetName, NewTargetName, Type, Flags);
-            TargetName = NewTargetName;
-        }
-        /// <summary>
-        /// 資格情報名の変更
-        /// </summary>
-        /// <param name="OldTargetName"></param>
-        /// <param name="NewTargetName"></param>
-        /// <param name="Type"></param>
-        /// <param name="Flags"></param>
-        public static void Rename(string OldTargetName, string NewTargetName, CredType Type, CredRenameFlags Flags = default(CredRenameFlags))
-            => Unmanaged.Credential.Rename(OldTargetName, NewTargetName, Type, Flags);
         public override string ToString()
             => $"{nameof(Credential)}{{"
             + $"{nameof(Flags)}: {Flags}"

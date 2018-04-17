@@ -110,14 +110,5 @@ namespace Advapi32.WinCred
         /// <param name="marshaledCredential"></param>
         /// <returns></returns>
         public static bool IsMarshalCredential(string marshaledCredential) => Interop.CredIsMarshaledCredential(marshaledCredential);
-        public static void UIStoreSSOCred(string UserName, string Password, bool Persist) => UIStoreSSOCred(null, UserName, Password, Persist);
-        public static void UIStoreSSOCred(string Realm, string UserName, string Password, bool Persist)
-        {
-            if (string.IsNullOrEmpty(UserName))
-                throw new ArgumentNullException(nameof(UserName));
-            if (string.IsNullOrEmpty(Password))
-                throw new ArgumentNullException(nameof(Password));
-            throw new NotImplementedException();
-        }
     }
 }

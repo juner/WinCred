@@ -22,6 +22,5 @@ namespace Credui.WinCred
         ExpectConfirmation = 0x20000,
         GenericCredentials = 0x40000,
         UsernameTargetCredentials = 0x80000,
-
     }
 }
