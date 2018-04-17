@@ -91,7 +91,7 @@ namespace Advapi32.WinCred
         /// </summary>
         /// <param name="MarshaledCredential"></param>
         /// <returns></returns>
-        public static ICredGetterHandle<ICredMarshal> UnmarshalCredential(string MarshaledCredential)
+        public static IDisposableGetter<ICredMarshal> UnmarshalCredential(string MarshaledCredential)
         {
             if (Interop.CredUnmarshalCredential(MarshaledCredential, out var CredType, out var Crednetial))
                 return new CriticalCredGetterHandle<ICredMarshal>(Crednetial, c => 

@@ -2,7 +2,7 @@
 
 namespace Advapi32.WinCred
 {
-    public interface ICredGetterHandle<T> : IDisposable
+    public interface IDisposableGetter<T> : IDisposable
     {
         T Value { get; }
     }

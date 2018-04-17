@@ -21,20 +21,14 @@ namespace Advapi32.WinCred
             => Unmanaged.CredentialTargetInformation.GetTargetInfo(TargetName, Flags).Using(t => t.Value.ToManaged());
         public void WriteDomainCredentials(Credential Credential, CredWriteDomainCredentialsFlag Flags)
         {
-            var cti = new Unmanaged.CredentialTargetInformation();
-            var c = new Unmanaged.Credential();
-            using (cti.Copy(this))
-            using (c.Copy(Credential))
-                cti.WriteDomainCredentials(c, Flags);
+            using (var cti = UnmanagedDisposableGetter<Unmanaged.CredentialTargetInformation, CredentialTargetInformation>.From(this))
+            using (var c = UnmanagedDisposableGetter<Unmanaged.Credential, Credential>.From(Credential))
+                cti.Value.WriteDomainCredentials(c.Value, Flags);
         }
         public IEnumerable<Credential> ReadDomainCredentials(CredReadDomainCredentialsFlags Flags)
-        {
-            var cti = new Unmanaged.CredentialTargetInformation();
-            using (cti.Copy(this))
-            using (var getter = cti.ReadDomainCredentials(Flags))
-                foreach (var c in getter.Value)
-                    yield return c.ToManaged();
-        }
+            => UnmanagedDisposableGetter<Unmanaged.CredentialTargetInformation, CredentialTargetInformation>.From(this)
+                ?.Using(g => g.Value).ReadDomainCredentials(Flags).Using(g => g.Value)?.Select(c => c.ToManaged())
+                ?? Enumerable.Empty<Credential>();
     }
 }
 

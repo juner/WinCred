@@ -62,7 +62,7 @@ namespace Advapi32.WinCred.Unmanaged
             var Disposable = CopyCredType(Info.CredTypes);
             return Disposable;
         }
-        public static ICredGetterHandle<CredentialTargetInformation> GetTargetInfo(string TargetName, CredGetTargetInfoFlags Flags = default)
+        public static IDisposableGetter<CredentialTargetInformation> GetTargetInfo(string TargetName, CredGetTargetInfoFlags Flags = default)
         {
             if (Interop.CredGetTargetInfo(TargetName, Flags, out var TargetInfo))
                 return new CriticalCredGetterHandle<CredentialTargetInformation>(TargetInfo, From);
@@ -83,7 +83,7 @@ namespace Advapi32.WinCred.Unmanaged
                 throw new NotSupportedException("not support.", exception);
             throw exception;
         }
-        public ICredGetterHandle<IEnumerable<Credential>> ReadDomainCredentials(CredReadDomainCredentialsFlags Flags = default)
+        public IDisposableGetter<IEnumerable<Credential>> ReadDomainCredentials(CredReadDomainCredentialsFlags Flags = default)
         {
             if (Interop.CredReadDomainCredentials(ref this, Flags, out var Count, out var Credentials))
                 return new CriticalCredGetterHandle<IEnumerable<Credential>>(Credentials, p => Credential.Froms((int)Count, Credentials));

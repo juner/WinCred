@@ -116,7 +116,7 @@ namespace Advapi32.WinCred.Unmanaged
         }
         public string TargetAlias;
         public string UserName;
-        public static ICredGetterHandle<IEnumerable<Credential>> Enumerate(string Filter = null, CredEnumerateFlags CredFlags = default(CredEnumerateFlags))
+        public static IDisposableGetter<IEnumerable<Credential>> Enumerate(string Filter = null, CredEnumerateFlags CredFlags = default(CredEnumerateFlags))
         {
             var Size = Marshal.SizeOf(typeof(IntPtr));
             if (Interop.CredEnumerate(Filter, CredFlags, out var count, out var pCredentials))
@@ -139,7 +139,7 @@ namespace Advapi32.WinCred.Unmanaged
                 .Select(n => Marshal.ReadIntPtr(p, n * Size))
                 .Select(From);
         }
-        public static ICredGetterHandle<Credential> Read(string TagetName, CredType Type = default(CredType), CredReadFlags Flags = default(CredReadFlags))
+        public static IDisposableGetter<Credential> Read(string TagetName, CredType Type = default(CredType), CredReadFlags Flags = default(CredReadFlags))
         {
             if (Interop.CredRead(TagetName, Type, Flags, out var CredentialPtr))
                 return new CriticalCredGetterHandle<Credential>(CredentialPtr, From);
