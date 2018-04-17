@@ -17,17 +17,23 @@ namespace Advapi32.WinCred
         public string PackageName { get; set; }
         public CredTiFlags Flags { get; set; }
         public CredType[] CredTypes { get; set; }
-        public static ICredGetterHandle<CredentialTargetInformation> GetTargetInfo(string TargetName, CredFlags Flags)
+        public static CredentialTargetInformation GetTargetInfo(string TargetName, CredGetTargetInfoFlags Flags = default)
+            => Unmanaged.CredentialTargetInformation.GetTargetInfo(TargetName, Flags).Using(t => t.Value.ToManaged());
+        public void WriteDomainCredentials(Credential Credential, CredWriteDomainCredentialsFlag Flags)
         {
-            throw new NotImplementedException();
+            var cti = new Unmanaged.CredentialTargetInformation();
+            var c = new Unmanaged.Credential();
+            using (cti.Copy(this))
+            using (c.Copy(Credential))
+                cti.WriteDomainCredentials(c, Flags);
         }
-        public void WriteDomainCredentials(Credential Credential, CredWriteFlags Flags)
+        public IEnumerable<Credential> ReadDomainCredentials(CredReadDomainCredentialsFlags Flags)
         {
-            throw new NotImplementedException();
-        }
-        public ICredGetterHandle<IEnumerable<Credential>> ReadDomainCredentials(CredFlags Flags)
-        {
-            throw new NotImplementedException();
+            var cti = new Unmanaged.CredentialTargetInformation();
+            using (cti.Copy(this))
+            using (var getter = cti.ReadDomainCredentials(Flags))
+                foreach (var c in getter.Value)
+                    yield return c.ToManaged();
         }
     }
 }

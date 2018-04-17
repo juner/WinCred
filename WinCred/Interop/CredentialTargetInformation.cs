@@ -24,8 +24,6 @@ namespace Advapi32.WinCred.Unmanaged
             {
                 if (CredTypesPtr == IntPtr.Zero || CredTypeCount <= 0)
                     return null;
-                var Self = this;
-                var Size = sizeof(CredType);
                 var CredTypes = new int[CredTypeCount];
                 Marshal.Copy(CredTypesPtr, CredTypes, 0, (int)CredTypeCount);
                 return CredTypes.Cast<CredType>().ToArray();
@@ -50,6 +48,19 @@ namespace Advapi32.WinCred.Unmanaged
                 DisposableResult?.Dispose();
                 throw;
             }
+        }
+        public IDisposable Copy(WinCred.CredentialTargetInformation Info)
+        {
+            TargetName = Info.TargetName;
+            NetbiosServerName = Info.NetbiosServerName;
+            DnsServerName = Info.DnsServerName;
+            NetbiosDomainName = Info.NetbiosDomainName;
+            DnsDomainName = Info.DnsDomainName;
+            DnsTreeName = Info.DnsTreeName;
+            PackageName = Info.PackageName;
+            Flags = Info.Flags;
+            var Disposable = CopyCredType(Info.CredTypes);
+            return Disposable;
         }
         public static ICredGetterHandle<CredentialTargetInformation> GetTargetInfo(string TargetName, CredGetTargetInfoFlags Flags = default)
         {
@@ -85,16 +96,16 @@ namespace Advapi32.WinCred.Unmanaged
 
         public WinCred.CredentialTargetInformation ToManaged()
             => new WinCred.CredentialTargetInformation
-        {
-            TargetName = TargetName,
-            NetbiosServerName = NetbiosServerName,
-            DnsServerName = DnsServerName,
-            NetbiosDomainName = NetbiosDomainName,
-            DnsDomainName = DnsDomainName,
-            DnsTreeName = DnsTreeName,
-            PackageName = PackageName,
-            Flags = Flags,
-            CredTypes = CredTypes,
-        };
+            {
+                TargetName = TargetName,
+                NetbiosServerName = NetbiosServerName,
+                DnsServerName = DnsServerName,
+                NetbiosDomainName = NetbiosDomainName,
+                DnsDomainName = DnsDomainName,
+                DnsTreeName = DnsTreeName,
+                PackageName = PackageName,
+                Flags = Flags,
+                CredTypes = CredTypes,
+            };
     }
 }
