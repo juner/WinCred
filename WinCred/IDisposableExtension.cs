@@ -48,6 +48,16 @@ namespace Advapi32.WinCred
                 using (s)
                     yield return s;
         }
+        public static IEnumerable<T2> Using<T1, T2>(this IEnumerable<T1> source, Func<T1, T2> process) where T2 : IDisposable
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+            if (process == null)
+                throw new ArgumentNullException(nameof(process));
+            foreach (var s in source)
+                using (var d = process(s))
+                    yield return d;
+        }
         public static IEnumerable<T2> Using<T1, T2>(this IEnumerable<T1> source,Func<T1, IEnumerable<T2>> process) where T1 : IDisposable
         {
             if (source == null)
