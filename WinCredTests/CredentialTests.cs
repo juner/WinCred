@@ -1,11 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Advapi32.WinCred;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.ComponentModel;
 
 namespace Advapi32.WinCred.Tests
 {
@@ -28,17 +22,19 @@ namespace Advapi32.WinCred.Tests
         public void WriteAndReadAndDeleteTest()
         {
             var TargetName = "TESTTARGET";
-            { 
-                var Credential = new Credential();
-                Credential.LastWritten = DateTime.Now;
-                Credential.Persist = CredPersist.LocalMachine;
-                Credential.Flags = 0;
-                Credential.Type = CredType.Generic;
-                Credential.TargetName = TargetName;
-                Credential.UserName = "TESTUSER";
-                Credential.Password = "TESTPASSWORD";
-                Credential.TargetAlias = "TESTALIAS";
-                Credential.Comment = "TESTCOMMENT 🌸";
+            {
+                var Credential = new Credential
+                {
+                    LastWritten = DateTime.Now,
+                    Persist = CredPersist.LocalMachine,
+                    Flags = 0,
+                    Type = CredType.Generic,
+                    TargetName = TargetName,
+                    UserName = "TESTUSER",
+                    Password = "TESTPASSWORD",
+                    TargetAlias = "TESTALIAS",
+                    Comment = "TESTCOMMENT 🌸"
+                };
                 Credential.Write();
             }
             {
