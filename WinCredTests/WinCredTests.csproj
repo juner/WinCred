@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
 
@@ -13,7 +12,5 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WinCred\WinCred.csproj" />
-  </ItemGroup>
-
+    <ProjectReference Include="..\WinCred\WinCred.csproj" />  </ItemGroup>
 </Project>
