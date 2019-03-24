@@ -6,8 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
 
 namespace Advapi32.WinCred.Tests
 {
@@ -55,9 +53,9 @@ namespace Advapi32.WinCred.Tests
                 {
                     var Credential = WinCred.Credential.Read(TargetName, CredType.Generic);
                     Assert.Fail("not delete.");
-                }catch(FileNotFoundException e)
+                }catch(Exception e)
                 {
-                    Trace.WriteLine(e);
+                    Assert.AreEqual(unchecked((uint)e.HResult), 0x80070490,$"ELEMENT_NOT_FOUND ? -> 0x{unchecked((uint)e.HResult):X8}");
                 }
             }
         }
