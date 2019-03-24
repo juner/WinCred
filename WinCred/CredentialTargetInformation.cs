@@ -25,7 +25,7 @@ namespace Advapi32.WinCred
             using (var c = UnmanagedDisposableGetter<Unmanaged.Credential, Credential>.From(Credential))
                 cti.Value.WriteDomainCredentials(c.Value, Flags);
         }
-        public IEnumerable<Credential> ReadDomainCredentials(CredReadDomainCredentialsFlags Flags)
+        public IEnumerable<Credential> ReadDomainCredentials(CredReadDomainCredentialsFlags Flags = default)
             => UnmanagedDisposableGetter<Unmanaged.CredentialTargetInformation, CredentialTargetInformation>.From(this)
                 ?.Using().Select(g => g.Value.ReadDomainCredentials(Flags)).Using(g => g.Value)?.Select(c => c.ToManaged())
             ?? Enumerable.Empty<Credential>();
